@@ -11,7 +11,8 @@ const DATA_DIR = path.join(__dirname, 'data');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+const STATIC_DIR = fs.existsSync(path.join(__dirname, 'dist')) ? path.join(__dirname, 'dist') : path.join(__dirname, 'public');
+app.use(express.static(STATIC_DIR));
 
 // ============================================================
 // CONFIGURACAO
@@ -159,6 +160,17 @@ app.post('/api/users', (req, res) => {
   usuarios.push(usuario);
   salvarDados('users', usuarios);
   res.json(usuario);
+});
+
+app.put('/api/users/:id', (req, res) => {
+  const { nome, cor } = req.body;
+  const usuarios = lerDados('users');
+  const usuario = usuarios.find(u => u.id === req.params.id);
+  if (!usuario) return res.status(404).json({ erro: 'Usuario nao encontrado.' });
+  if (nome && typeof nome === 'string' && nome.trim().length > 0) usuario.nome = nome.trim();
+  if (cor && typeof cor === 'string') usuario.cor = cor;
+  salvarDados('users', usuarios);
+  res.json({ id: usuario.id, nome: usuario.nome, cor: usuario.cor, criadoEm: usuario.criadoEm });
 });
 
 app.delete('/api/users/:id', (req, res) => {

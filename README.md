@@ -64,13 +64,25 @@ Abra http://localhost:3000
 npm run build
 ```
 
-Gera os arquivos minificados na pasta `dist/`.
+Gera a pasta `dist/` completa: frontend minificado, backend, configuracao, data e media.
 
-### Producao
+### Rodar em producao
+
+Apos o build, rode diretamente da pasta `dist/`:
+
+```bash
+cd dist
+npm install --omit=dev
+node server.js
+```
+
+Ou pela raiz do projeto (detecta `dist/` automaticamente):
 
 ```bash
 npm start
 ```
+
+Porta unica: **3000**.
 
 ## Estrutura
 
@@ -87,7 +99,14 @@ HomeFlix/
     index.html        # Pagina principal
     css/style.css     # Estilos
     js/app.js         # Frontend SPA
-  dist/               # Gerado por npm run build
+  dist/               # Gerado por npm run build (producao completa)
+    server.js         # Backend Express
+    config.json       # Configuracao
+    media/            # Pasta padrao para videos
+    data/             # Dados (users, watch, categories)
+    index.html        # Frontend minificado
+    css/style.min.css
+    js/app.min.js
   package.json
 ```
 

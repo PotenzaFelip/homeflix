@@ -174,12 +174,12 @@
     </div>
   </div>
 
-  <!-- MODAL CRIAR PERFIL -->
+  <!-- MODAL CRIAR/EDITAR PERFIL -->
   <div id="modalCriarPerfil" class="modal" style="display:none">
     <div class="modal__backdrop" id="fecharPerfil"></div>
     <div class="modal__config">
       <div class="config__cabecalho">
-        <h2>Novo perfil</h2>
+        <h2 id="tituloModalPerfil">Novo perfil</h2>
         <button class="modal__fechar" id="btnFecharPerfil">&times;</button>
       </div>
       <div class="config__corpo">
@@ -192,6 +192,25 @@
           <div class="perfil-cores" id="perfilCores"></div>
         </div>
         <button class="config__botao config__botao--salvar" id="btnCriarPerfil" style="width:100%">Criar perfil</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CONFIRMAR EXCLUSAO -->
+  <div id="modalConfirmarExclusao" class="modal" style="display:none">
+    <div class="modal__backdrop" id="fecharConfirmarExclusao"></div>
+    <div class="modal__config modal--pequeno">
+      <div class="config__cabecalho">
+        <h2>Excluir perfil</h2>
+        <button class="modal__fechar" id="btnFecharConfirmarExclusao">&times;</button>
+      </div>
+      <div class="config__corpo">
+        <p class="config__descricao" id="textoConfirmarExclusao">Tem certeza que deseja excluir este perfil?</p>
+        <p class="config__descricao" style="font-size:.75rem;color:#f87171">Todos os dados de assistidos e categorias serao perdidos.</p>
+        <div style="display:flex;gap:10px;margin-top:20px">
+          <button class="config__botao config__botao--salvar" id="btnConfirmarExclusao" style="background:#dc2626;flex:1">Excluir</button>
+          <button class="config__botao" id="btnCancelarExclusao" style="background:var(--bg3);color:var(--texto2);border:1px solid var(--borda);flex:1">Cancelar</button>
+        </div>
       </div>
     </div>
   </div>

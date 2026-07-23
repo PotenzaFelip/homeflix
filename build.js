@@ -71,4 +71,51 @@ const jsDir = path.join(PUBLIC, 'js');
 const jsDist = path.join(DIST, 'js');
 if (fs.existsSync(JS_IN)) fs.copyFileSync(JS_IN, path.join(jsDist, 'app.js'));
 
-console.log('\n  [build] Pronto! Arquivos em dist/');
+console.log('\n  [build] Frontend pronto em dist/');
+
+// ============================================================
+// BACKEND — copia server.js, config, data e media para dist/
+// ============================================================
+const DIST_SERVER = path.join(DIST, 'server.js');
+const SERVER_SRC = path.join(__dirname, 'server.js');
+
+if (fs.existsSync(SERVER_SRC)) {
+  let serverCode = fs.readFileSync(SERVER_SRC, 'utf-8');
+  // dist/server.js serve de si mesmo (nao precisa de auto-detect)
+  serverCode = serverCode.replace(
+    /const STATIC_DIR =.*\napp\.use\(express\.static\(STATIC_DIR\)\);/,
+    "app.use(express.static(__dirname));"
+  );
+  fs.writeFileSync(DIST_SERVER, serverCode, 'utf-8');
+  console.log('  [build] Server   -> dist/server.js');
+}
+
+// config.json
+const configSrc = path.join(__dirname, 'config.json');
+const configDst = path.join(DIST, 'config.json');
+if (fs.existsSync(configSrc)) {
+  fs.copyFileSync(configSrc, configDst);
+  console.log('  [build] Config   -> dist/config.json');
+} else {
+  fs.writeFileSync(configDst, JSON.stringify({ pastaMedia: './media' }, null, 2), 'utf-8');
+  console.log('  [build] Config   -> dist/config.json (padrao)');
+}
+
+// data/
+const dataSrc = path.join(__dirname, 'data');
+const dataDst = path.join(DIST, 'data');
+if (fs.existsSync(dataSrc)) {
+  fs.cpSync(dataSrc, dataDst, { recursive: true });
+  console.log('  [build] Data     -> dist/data/');
+} else {
+  fs.mkdirSync(dataDst, { recursive: true });
+  console.log('  [build] Data     -> dist/data/ (criado)');
+}
+
+// media/ (pasta padrao para videos)
+const mediaDst = path.join(DIST, 'media');
+fs.mkdirSync(mediaDst, { recursive: true });
+console.log('  [build] Media    -> dist/media/');
+
+console.log('\n  [build] Pronto! dist/ pronto para producao');
+console.log('    cd dist && npm install --omit=dev && node server.js');

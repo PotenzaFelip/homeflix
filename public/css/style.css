@@ -72,6 +72,21 @@ input{font-family:var(--fonte)}
 }
 .perfil-botao-adicionar:hover{border-color:var(--cor);color:#fff}
 
+.perfil-card__botoes{
+  display:flex;gap:6px;opacity:0;transition:opacity .2s;
+}
+.perfil-card:hover .perfil-card__botoes{opacity:1}
+.perfil-card__btn{
+  width:28px;height:28px;border-radius:50%;border:1px solid var(--borda);
+  background:var(--bg3);color:var(--texto2);font-size:.8rem;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;
+}
+.perfil-card__btn--editar:hover{border-color:#0071eb;color:#0071eb}
+.perfil-card__btn--excluir:hover{border-color:#dc2626;color:#dc2626}
+
+.modal--pequeno{max-width:400px}
+
 /* ============================================================
    HEADER
    ============================================================ */

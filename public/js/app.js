@@ -20,6 +20,14 @@
   const avatarPerfil = $('#avatarPerfil');
   const nomePerfil = $('#nomePerfil');
   const btnTrocarPerfil = $('#btnTrocarPerfil');
+  const tituloModalPerfil = $('#tituloModalPerfil');
+
+  // -- refs: excluir perfil --
+  const modalConfirmarExclusao = $('#modalConfirmarExclusao');
+  const fecharConfirmarExclusao = $('#fecharConfirmarExclusao');
+  const btnFecharConfirmarExclusao = $('#btnFecharConfirmarExclusao');
+  const btnConfirmarExclusao = $('#btnConfirmarExclusao');
+  const btnCancelarExclusao = $('#btnCancelarExclusao');
 
   // -- refs: app --
   const carregando = $('#carregando');
@@ -82,33 +90,38 @@
   let tempoCheckId = null;
   let corPerfilSelecionada = CORES_PERFIL[0];
   let catsEditandoShow = null;
+  let perfilEditandoId = null;
+  let perfilExcluindoId = null;
 
   // ============================================================
   //  INICIALIZACAO
   // ============================================================
   function init() {
-    // tenta restaurar sessao
+    eventos();
     const userIdSalvo = localStorage.getItem('homeflix_userId');
-    if (userIdSalvo) {
-      carregarUsuarios().then(() => {
+    carregarUsuarios().then(() => {
+      if (userIdSalvo) {
         const user = usuariosCache.find(u => u.id === userIdSalvo);
         if (user) { entrarPerfil(user); return; }
-        mostrarTelaPerfil();
-      });
-    } else {
+      }
       mostrarTelaPerfil();
-    }
-    eventos();
+    });
   }
 
   let usuariosCache = [];
 
   function eventos() {
-    btnAdicionarPerfil.addEventListener('click', () => modalCriarPerfil.style.display = 'flex');
+    btnAdicionarPerfil.addEventListener('click', () => abrirModalPerfil(null));
     fecharPerfil.addEventListener('click', () => modalCriarPerfil.style.display = 'none');
     btnFecharPerfil.addEventListener('click', () => modalCriarPerfil.style.display = 'none');
-    btnCriarPerfil.addEventListener('click', criarPerfil);
+    btnCriarPerfil.addEventListener('click', salvarPerfil);
     btnTrocarPerfil.addEventListener('click', () => { sairPerfil(); });
+
+    // excluir perfil
+    fecharConfirmarExclusao.addEventListener('click', () => modalConfirmarExclusao.style.display = 'none');
+    btnFecharConfirmarExclusao.addEventListener('click', () => modalConfirmarExclusao.style.display = 'none');
+    btnCancelarExclusao.addEventListener('click', () => modalConfirmarExclusao.style.display = 'none');
+    btnConfirmarExclusao.addEventListener('click', confirmarExclusaoPerfil);
 
     btnHome.addEventListener('click', irParaPrincipal);
     btnVoltarLista.addEventListener('click', irParaPrincipal);
@@ -122,6 +135,7 @@
     btnProximoEpNao.addEventListener('click', () => { proximoEpOverlay.style.display = 'none'; proximoEpMostrado = false; });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
+        if (modalConfirmarExclusao.style.display !== 'none') { modalConfirmarExclusao.style.display = 'none'; return; }
         if (modalCategorias.style.display !== 'none') { modalCategorias.style.display = 'none'; return; }
         if (modalCriarPerfil.style.display !== 'none') { modalCriarPerfil.style.display = 'none'; return; }
         if (proximoEpOverlay.style.display !== 'none') { proximoEpOverlay.style.display = 'none'; proximoEpMostrado = false; return; }
@@ -174,29 +188,107 @@
       card.innerHTML = `
         <div class="perfil-avatar" style="background:${u.cor}">${u.nome.charAt(0).toUpperCase()}</div>
         <span class="perfil-card__nome">${escHTML(u.nome)}</span>
+        <div class="perfil-card__botoes">
+          <button class="perfil-card__btn perfil-card__btn--editar" title="Editar perfil" data-id="${u.id}">&#9998;</button>
+          <button class="perfil-card__btn perfil-card__btn--excluir" title="Excluir perfil" data-id="${u.id}">&times;</button>
+        </div>
       `;
-      card.addEventListener('click', () => entrarPerfil(u));
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.perfil-card__btn')) return;
+        entrarPerfil(u);
+      });
+      card.querySelector('.perfil-card__btn--editar').addEventListener('click', (e) => {
+        e.stopPropagation();
+        abrirModalPerfil(u);
+      });
+      card.querySelector('.perfil-card__btn--excluir').addEventListener('click', (e) => {
+        e.stopPropagation();
+        abrirModalExclusao(u);
+      });
       listaPerfis.appendChild(card);
     }
   }
 
-  async function criarPerfil() {
+  function abrirModalPerfil(user) {
+    perfilEditandoId = user ? user.id : null;
+    tituloModalPerfil.textContent = user ? 'Editar perfil' : 'Novo perfil';
+    btnCriarPerfil.textContent = user ? 'Salvar' : 'Criar perfil';
+    inputNomePerfil.value = user ? user.nome : '';
+    corPerfilSelecionada = user ? user.cor : CORES_PERFIL[0];
+    atualizarCoresUI();
+    modalCriarPerfil.style.display = 'flex';
+    inputNomePerfil.focus();
+  }
+
+  function atualizarCoresUI() {
+    perfilCores.querySelectorAll('.perfil-cor-opcao').forEach(el => {
+      el.classList.toggle('perfil-cor-opcao--selecionada', el.style.background === corPerfilSelecionada || rgbToHex(el.style.background) === corPerfilSelecionada);
+    });
+  }
+
+  function rgbToHex(rgb) {
+    if (!rgb || rgb.startsWith('#')) return rgb;
+    const m = rgb.match(/\d+/g);
+    if (!m || m.length < 3) return rgb;
+    return '#' + m.slice(0, 3).map(x => (+x).toString(16).padStart(2, '0')).join('');
+  }
+
+  async function salvarPerfil() {
     const nome = inputNomePerfil.value.trim();
     if (!nome) return;
     try {
-      const r = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, cor: corPerfilSelecionada })
-      });
-      const user = await r.json();
-      if (user.id) {
-        usuariosCache.push(user);
-        modalCriarPerfil.style.display = 'none';
-        inputNomePerfil.value = '';
-        entrarPerfil(user);
+      if (perfilEditandoId) {
+        const r = await fetch(`/api/users/${perfilEditandoId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, cor: corPerfilSelecionada })
+        });
+        const user = await r.json();
+        if (user.id) {
+          const idx = usuariosCache.findIndex(u => u.id === perfilEditandoId);
+          if (idx >= 0) usuariosCache[idx] = user;
+          if (usuarioAtual && usuarioAtual.id === perfilEditandoId) {
+            usuarioAtual = user;
+            avatarPerfil.style.background = user.cor;
+            avatarPerfil.textContent = user.nome.charAt(0).toUpperCase();
+            nomePerfil.textContent = user.nome;
+          }
+        }
+      } else {
+        const r = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, cor: corPerfilSelecionada })
+        });
+        const user = await r.json();
+        if (user.id) usuariosCache.push(user);
+      }
+      modalCriarPerfil.style.display = 'none';
+      inputNomePerfil.value = '';
+      perfilEditandoId = null;
+      renderizarPerfis();
+    } catch { /* ignore */ }
+  }
+
+  function abrirModalExclusao(user) {
+    perfilExcluindoId = user.id;
+    $('#textoConfirmarExclusao').textContent = `Tem certeza que deseja excluir o perfil "${user.nome}"?`;
+    modalConfirmarExclusao.style.display = 'flex';
+  }
+
+  async function confirmarExclusaoPerfil() {
+    if (!perfilExcluindoId) return;
+    try {
+      await fetch(`/api/users/${perfilExcluindoId}`, { method: 'DELETE' });
+      usuariosCache = usuariosCache.filter(u => u.id !== perfilExcluindoId);
+      if (usuarioAtual && usuarioAtual.id === perfilExcluindoId) {
+        sairPerfil();
+      } else {
+        renderizarPerfis();
       }
     } catch { /* ignore */ }
+    modalConfirmarExclusao.style.display = 'none';
+    perfilExcluindoId = null;
   }
 
   async function entrarPerfil(user) {
