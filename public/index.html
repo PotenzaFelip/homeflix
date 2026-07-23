@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomeFlix</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23e50914'/><polygon points='12,8 26,16 12,24' fill='white'/></svg>">
+</head>
+<body>
+
+  <!-- TELA DE PERFIS -->
+  <div id="telaPerfil" class="tela-perfil">
+    <div class="perfil-topo">
+      <span class="logo-icon">&#9654;</span>
+      <h1 class="logo-texto">Home<span>Flix</span></h1>
+    </div>
+    <h2 class="perfil-titulo">Quem esta assistindo?</h2>
+    <div id="listaPerfis" class="perfil-grid"></div>
+    <button id="btnAdicionarPerfil" class="perfil-botao-adicionar">+ Adicionar perfil</button>
+  </div>
+
+  <!-- TELA PRINCIPAL DO APP (escondida ate login) -->
+  <div id="appContainer" style="display:none">
+
+    <header class="cabecalho">
+      <div class="cabecalho__esquerda">
+        <div class="cabecalho__logo" id="btnHome" style="cursor:pointer">
+          <span class="logo-icon">&#9654;</span>
+          <h1 class="logo-texto">Home<span>Flix</span></h1>
+        </div>
+        <div class="cabecalho__usuario" id="btnTrocarPerfil" title="Trocar perfil">
+          <div id="avatarPerfil" class="avatar-perfil"></div>
+          <span id="nomePerfil" class="nome-perfil"></span>
+        </div>
+      </div>
+      <div class="cabecalho__acoes">
+        <div class="cabecalho__busca">
+          <input type="text" id="campoBusca" class="busca-input" placeholder="Buscar..." autocomplete="off">
+          <svg class="busca-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+        </div>
+        <button class="botao-config" id="btnAbrirConfig" title="Configuracoes">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="conteudo">
+      <!-- FILTROS DE CATEGORIA -->
+      <div id="barraFiltros" class="barra-filtros" style="display:none">
+        <div id="listaFiltros" class="filtros-lista"></div>
+      </div>
+
+      <div id="carregando" class="estado">
+        <div class="spinner"></div>
+        <p>Carregando biblioteca...</p>
+      </div>
+      <div id="vazio" class="estado" style="display:none">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><rect x="2" y="2" width="20" height="20" rx="2"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>
+        <h2>Biblioteca vazia</h2>
+        <p>Configure a pasta de midia pelo botao de configuracoes acima.</p>
+      </div>
+
+      <!-- TELA PRINCIPAL -->
+      <div id="telaPrincipal" style="display:none">
+        <h2 class="secao-titulo">Minha Biblioteca</h2>
+        <div id="gradeShows" class="grade-shows"></div>
+      </div>
+
+      <!-- TELA DA SERIE -->
+      <div id="telaSerie" style="display:none">
+        <div class="serie-topo">
+          <button class="botao-voltar" id="btnVoltarLista">&#8592; Biblioteca</button>
+          <div class="serie-cabecalho">
+            <h1 id="serieNome" class="serie-nome"></h1>
+            <p id="serieInfo" class="serie-info"></p>
+            <div class="serie-cats">
+              <button id="btnGerenciarCats" class="serie-botao-cats">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                Categorias
+              </button>
+              <div id="serieCatsTags" class="serie-cats-tags"></div>
+            </div>
+          </div>
+        </div>
+        <div id="listaTemporadas"></div>
+      </div>
+    </main>
+
+    <!-- PLAYER FULL-WIDTH -->
+    <div id="playerTela" class="player-tela" style="display:none">
+      <div class="player-topo">
+        <button class="botao-voltar" id="btnVoltarPlayer">&#8592; Voltar</button>
+        <div class="player-topo-titulos">
+          <span id="playerShowNome" class="player-topo-show"></span>
+          <span id="playerEpInfo" class="player-topo-ep"></span>
+        </div>
+      </div>
+      <div class="player-video-container">
+        <video id="videoPlayer" class="player-video" controls autoplay preload="metadata"></video>
+      </div>
+      <!-- Overlay: Proximo episodio -->
+      <div id="proximoEpOverlay" class="proximo-ep-overlay" style="display:none">
+        <div class="proximo-ep-card">
+          <p class="proximo-ep-label">Proximo episodio</p>
+          <p id="proximoEpNome" class="proximo-ep-nome"></p>
+          <div class="proximo-ep-botoes">
+            <button id="btnProximoEpSim" class="proximo-ep-botao proximo-ep-botao--sim">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              Assistir
+            </button>
+            <button id="btnProximoEpNao" class="proximo-ep-botao proximo-ep-botao--nao">Cancelar</button>
+          </div>
+        </div>
+      </div>
+      <div class="player-detalhes">
+        <h3 id="playerEpTitulo"></h3>
+        <p id="playerEpMeta"></p>
+        <div id="playerEpLista" class="player-ep-lista"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIGURACOES -->
+  <div id="modalConfig" class="modal" style="display:none">
+    <div class="modal__backdrop" id="fecharConfig"></div>
+    <div class="modal__config">
+      <div class="config__cabecalho">
+        <h2>Configuracoes</h2>
+        <button class="modal__fechar" id="btnFecharConfig">&times;</button>
+      </div>
+      <div class="config__corpo">
+        <div class="config__secao">
+          <label class="config__label">Pasta de Midia</label>
+          <p class="config__descricao">Caminho completo da pasta com seus videos.</p>
+          <div class="config__linha-input">
+            <input type="text" id="inputPastaMedia" class="config__input" placeholder="C:\Users\Videos">
+            <button class="config__botao config__botao--salvar" id="btnSalvarPasta">Salvar</button>
+          </div>
+          <p id="mensagemConfig" class="config__mensagem" style="display:none"></p>
+        </div>
+        <div class="config__secao">
+          <label class="config__label">Status</label>
+          <div class="config__status">
+            <div class="config__status-item"><span class="config__status-titulo">Pasta:</span><span id="statusPasta" class="config__status-valor">--</span></div>
+            <div class="config__status-item"><span class="config__status-titulo">Existe:</span><span id="statusExiste" class="config__status-valor">--</span></div>
+            <div class="config__status-item"><span class="config__status-titulo">Videos:</span><span id="statusVideos" class="config__status-valor">--</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL GERENCIAR CATEGORIAS -->
+  <div id="modalCategorias" class="modal" style="display:none">
+    <div class="modal__backdrop" id="fecharCats"></div>
+    <div class="modal__config modal--cats">
+      <div class="config__cabecalho">
+        <h2>Categorias</h2>
+        <button class="modal__fechar" id="btnFecharCats">&times;</button>
+      </div>
+      <div class="config__corpo">
+        <p class="config__descricao" id="catsShowNome"></p>
+        <div class="cats-input-linha">
+          <input type="text" id="inputNovaCat" class="config__input" placeholder="Nome da categoria">
+          <button class="config__botao config__botao--salvar" id="btnAdicionarCat">Adicionar</button>
+        </div>
+        <div id="listaCatsDisponiveis" class="cats-tags-editaveis"></div>
+        <div class="cats-separador"></div>
+        <label class="config__label">Categorias atribuidas a este titulo</label>
+        <div id="listaCatsAtribuidas" class="cats-tags-editaveis"></div>
+        <p id="mensagemCats" class="config__mensagem" style="display:none"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CRIAR PERFIL -->
+  <div id="modalCriarPerfil" class="modal" style="display:none">
+    <div class="modal__backdrop" id="fecharPerfil"></div>
+    <div class="modal__config">
+      <div class="config__cabecalho">
+        <h2>Novo perfil</h2>
+        <button class="modal__fechar" id="btnFecharPerfil">&times;</button>
+      </div>
+      <div class="config__corpo">
+        <div class="config__secao">
+          <label class="config__label">Nome</label>
+          <input type="text" id="inputNomePerfil" class="config__input" placeholder="Nome do perfil" style="width:100%">
+        </div>
+        <div class="config__secao">
+          <label class="config__label">Cor</label>
+          <div class="perfil-cores" id="perfilCores"></div>
+        </div>
+        <button class="config__botao config__botao--salvar" id="btnCriarPerfil" style="width:100%">Criar perfil</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="rodape"><p>HomeFlix &mdash; Servidor de Midia Pessoal</p></footer>
+  <script src="/js/app.js"></script>
+</body>
+</html>
